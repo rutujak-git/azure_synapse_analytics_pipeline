@@ -1,0 +1,20 @@
+{
+	"name": "03_explore_taxi_zone",
+	"properties": {
+		"folder": {
+			"name": "nyc-taxi/discovery"
+		},
+		"content": {
+			"query": "-------------------------------- Hor to Query Subset of Columns -------------------------------------\nuse nyc_taxi_discovery;\n\nSELECT\n    *\nFROM\n    OPENROWSET(\n        BULK 'abfss://nyc-taxi-data@datatocrunchproject8adls.dfs.core.windows.net/raw/taxi_zone.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        HEADER_ROW = TRUE\n    )\n    WITH(\n        Borough VARCHAR(15),\n        Zone VARCHAR(50)\n    ) AS [result];\n\nSELECT\n    *\nFROM\n    OPENROWSET(\n        BULK 'abfss://nyc-taxi-data@datatocrunchproject8adls.dfs.core.windows.net/raw/taxi_zone_without_header.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        FIELDTERMINATOR = ',',\n        ROWTERMINATOR = '\\n'\n    )\n    WITH(\n        Borough VARCHAR(15) 2,             --- use ordinal positions to map column names correctly with the columns with no headers\n        Zone VARCHAR(50) 3\n    ) AS [result];\n\nSELECT\n    *\nFROM\n    OPENROWSET(\n        BULK 'abfss://nyc-taxi-data@datatocrunchproject8adls.dfs.core.windows.net/raw/taxi_zone.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        HEADER_ROW = TRUE\n    )\n    WITH(\n        Location_id SMALLINT,  --- case sensitivity of the column name changed - we get null values\n        borough VARCHAR(15),   --- case sensitivity of the column name changed - we get null values\n        Zone VARCHAR(50),\n        service_zone VARCHAR(15)\n    ) AS [result];\n\n---- If we assign ordinal position then we will get correct values even with different case-sensitivity column names\nSELECT\n    *\nFROM\n    OPENROWSET(\n        BULK 'abfss://nyc-taxi-data@datatocrunchproject8adls.dfs.core.windows.net/raw/taxi_zone.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        HEADER_ROW = TRUE\n    )\n    WITH(\n        Location_id SMALLINT 1,  \n        borough VARCHAR(15) 2,   \n        zone VARCHAR(50) 3,\n        service_zone VARCHAR(15) 4\n    ) AS [result];\n\n----------------------------------- HOW TO DEBUG ISSUES --------------------------------------\n\nSELECT\n    *\nFROM\n    OPENROWSET(\n        BULK 'abfss://nyc-taxi-data@datatocrunchproject8adls.dfs.core.windows.net/raw/taxi_zone.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        HEADER_ROW = TRUE\n    )\n    WITH(\n        Location_id SMALLINT 1,  \n        borough VARCHAR(15) 2,   \n        zone VARCHAR(5) 3,                --- MOST OF THE TIME, WE GIVE INCORRECT DATA TYPES. HERE INSTEAD OF 50 WE HAVE GIVEN VARCHAR(5). ERROR MESSAGE IS VERY GENERIC \n        service_zone VARCHAR(15) 4\n    ) AS [result];\n\nSELECT\n    *\nFROM\n    OPENROWSET(\n        BULK 'abfss://nyc-taxi-data@datatocrunchproject8adls.dfs.core.windows.net/raw/taxi_zone.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '1.0',  --- WE SWITCHED TO VERSION 1.0 -- ERROR IS MORE SPECIFIC\n        FIRSTROW = 2\n    )\n    WITH(\n        LocationID SMALLINT,\n        Borough VARCHAR(15),\n        Zone VARCHAR(5),              \n        service_zone VARCHAR(15) 4\n    ) AS [result];\n\n---------------------------- HOW TO USE EXTERNAL DATA SOURCE --------------------------------------\nCREATE EXTERNAL DATA SOURCE nyc_taxi_data\nWITH (\n    LOCATION = 'abfss://nyc-taxi-data@datatocrunchproject8adls.dfs.core.windows.net/'\n);\n\nSELECT\n    *\nFROM\n    OPENROWSET(\n        BULK 'raw/taxi_zone.csv',\n        DATA_SOURCE = 'nyc_taxi_data',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        FIRSTROW = 2\n    )\n    WITH(\n        Location_id SMALLINT 1,  \n        borough VARCHAR(15) 2,   \n        zone VARCHAR(50) 3,               \n        service_zone VARCHAR(15) 4\n    ) AS [result];\n\nSELECT name, location from sys.external_data_sources;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "nyc_taxi_discovery",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
