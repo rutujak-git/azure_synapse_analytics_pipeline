@@ -1,0 +1,20 @@
+{
+	"name": "02_how_to_query_csv_files",
+	"properties": {
+		"folder": {
+			"name": "nyc-taxi/discovery"
+		},
+		"content": {
+			"query": "-- Check default collation\nSELECT name, collation_name from sys.databases;\n\n-- Specify UTF-8 Collation for varchar columns\nSELECT\n    *\nFROM\n    OPENROWSET(\n        BULK 'abfss://nyc-taxi-data@datatocrunchproject8adls.dfs.core.windows.net/raw/taxi_zone.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        HEADER_ROW = TRUE\n    )\n    WITH(\n        LocationID SMALLINT,\n        Borough VARCHAR(15) COLLATE Latin1_General_100_CI_AI_SC_UTF8,\n        Zone VARCHAR(50) COLLATE Latin1_General_100_CI_AI_SC_UTF8,\n        service_zone VARCHAR(15) COLLATE Latin1_General_100_CI_AI_SC_UTF8\n    ) AS [result]\n\n-- We can specify/apply UTF-8 Collation at Database level too (You can't alter Master Database)\nCREATE DATABASE nyc_taxi_discovery;\n\nUSE nyc_taxi_discovery;\n\nALTER DATABASE nyc_taxi_discovery COLLATE Latin1_General_100_CI_AI_SC_UTF8;\n\nSELECT name, collation_name from sys.databases;\n\nSELECT\n    *\nFROM\n    OPENROWSET(\n        BULK 'abfss://nyc-taxi-data@datatocrunchproject8adls.dfs.core.windows.net/raw/taxi_zone.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        HEADER_ROW = TRUE\n    )\n    WITH(\n        LocationID SMALLINT,\n        Borough VARCHAR(15),\n        Zone VARCHAR(50),\n        service_zone VARCHAR(15)\n    ) AS [result]\n\n---------------------------------- Query Subset of Columns ------------------------------\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "nyc_taxi_discovery",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
