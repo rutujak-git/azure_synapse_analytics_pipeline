@@ -1,0 +1,20 @@
+{
+	"name": "01_how_to_use_openrowset",
+	"properties": {
+		"folder": {
+			"name": "nyc-taxi/discovery"
+		},
+		"content": {
+			"query": "-- This is auto-generated code\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://datatocrunchproject8adls.dfs.core.windows.net/nyc-taxi-data/raw/taxi_zone.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0'\n    ) AS [result]\n\n-- how to use abfss path for above query\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'abfss://nyc-taxi-data@datatocrunchproject8adls.dfs.core.windows.net/raw/taxi_zone.csv',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',  --PARSER_VERSION tells Synapse which CSV parsing engine to use when reading CSV files via OPENROWSET\n        header_row = true,\n        FIELDTERMINATOR = ',',  --comma is a default terminator\n        ROWTERMINATOR = '\\n'\n    ) AS [result]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
