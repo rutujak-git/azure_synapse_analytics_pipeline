@@ -299,6 +299,26 @@
 				"type": "SqlQuery"
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/10_reading_delta_files')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "use nyc_taxi_discovery;\n\n-- This is auto-generated code\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://datatocrunchproject8adls.dfs.core.windows.net/nyc-taxi-data/raw/trip_data_green_delta/',\n        FORMAT = 'DELTA'\n    ) AS [result];   --we get 2 additional columns as year and month which we dont get using parquet files\n\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'raw/trip_data_green_delta/year=2020',\n        DATA_SOURCE = 'nyc_taxi_data',\n        FORMAT = 'DELTA'\n    ) AS [result];   --get the error as Content of directory on path 'https://datatocrunchproject8adls.dfs.core.windows.net/nyc-taxi-data/raw/trip_data_green_delta/year=2020/_delta_log/*.*' cannot be listed.\n\nexec sp_describe_first_result_set N'\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK ''https://datatocrunchproject8adls.dfs.core.windows.net/nyc-taxi-data/raw/trip_data_green_delta/'',\n        FORMAT = ''DELTA''\n    ) AS [result]';\n\nexec sp_describe_first_result_set N'\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK ''https://datatocrunchproject8adls.dfs.core.windows.net/nyc-taxi-data/raw/trip_data_green_delta/'',\n        FORMAT = ''DELTA''\n    ) with (\n                VendorID INT,\n                lpep_pickup_datetime datetime2(7),\n                lpep_dropoff_datetime datetime2(7),\n                store_and_fwd_flag CHAR(1),\n                RatecodeID INT,\n                PULocationID INT,\n                DOLocationID INT,\n                passenger_count INT,\n                trip_distance FLOAT,\n                fare_amount FLOAT,\n                extra FLOAT,\n                mta_tax FLOAT,\n                tip_amount FLOAT,\n                tolls_amount FLOAT,\n                ehail_fee INT,\n                improvement_surcharge FLOAT,\n                total_amount FLOAT,\n                payment_type INT,\n                trip_type INT,\n                congestion_surcharge FLOAT,\n                year varchar(4),\n                month varchar(2)\n    ) AS [result]';\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://datatocrunchproject8adls.dfs.core.windows.net/nyc-taxi-data/raw/trip_data_green_delta/',\n        FORMAT = 'DELTA'\n    ) with (\n                tip_amount FLOAT,\n                trip_type INT\n    ) AS [result];\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://datatocrunchproject8adls.dfs.core.windows.net/nyc-taxi-data/raw/trip_data_green_delta/',\n        FORMAT = 'DELTA'\n    ) with (\n                tip_amount FLOAT,\n                trip_type INT,\n                year VARCHAR(4),\n                month VARCHAR(2)\n    ) AS [result];\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "nyc_taxi_discovery",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
 		}
 	]
 }
