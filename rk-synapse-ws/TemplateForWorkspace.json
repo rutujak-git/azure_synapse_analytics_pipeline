@@ -276,6 +276,29 @@
 				"type": "SqlQuery"
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/09_reading_parquet_files')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "nyc-taxi/discovery"
+				},
+				"content": {
+					"query": "use nyc_taxi_discovery;\n\n-- This is auto-generated code\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://datatocrunchproject8adls.dfs.core.windows.net/nyc-taxi-data/raw/trip_data_green_parquet/year=2020/month=01/part-00000-tid-6133789922049958496-2e489315-890a-4453-ae93-a104be9a6f06-106-1-c000.snappy.parquet',\n        FORMAT = 'PARQUET'\n    ) AS [result];\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'raw/trip_data_green_parquet/year=2020/month=01/',\n        DATA_SOURCE = 'nyc_taxi_data',\n        FORMAT = 'PARQUET'\n    ) AS [result];\n\n---- Identifying the inferred data types\nexec sp_describe_first_result_set N'\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK ''raw/trip_data_green_parquet/year=2020/month=01/'',\n        DATA_SOURCE = ''nyc_taxi_data'',\n        FORMAT = ''PARQUET''\n    ) with (\n        VendorID INT,\n    lpep_pickup_datetime datetime2(7),\n    lpep_dropoff_datetime datetime2(7),\n    store_and_fwd_flag CHAR(1),\n    RatecodeID INT,\n    PULocationID INT,\n    DOLocationID INT,\n    passenger_count INT,\n    trip_distance FLOAT,\n    fare_amount FLOAT,\n    extra FLOAT,\n    mta_tax FLOAT,\n    tip_amount FLOAT,\n    tolls_amount FLOAT,\n    ehail_fee INT,\n    improvement_surcharge FLOAT,\n    total_amount FLOAT,\n    payment_type INT,\n    trip_type INT,\n    congestion_surcharge FLOAT\n    ) AS [result]';\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'raw/trip_data_green_parquet/year=2020/month=01/',\n        DATA_SOURCE = 'nyc_taxi_data',\n        FORMAT = 'PARQUET'\n    ) with (\n    -- VendorID INT,\n    -- lpep_pickup_datetime datetime2(7),\n    -- lpep_dropoff_datetime datetime2(7),\n    -- store_and_fwd_flag CHAR(1),\n    -- RatecodeID INT,\n    -- PULocationID INT,\n    -- DOLocationID INT,\n    -- passenger_count INT,\n    -- trip_distance FLOAT,\n    -- fare_amount FLOAT,\n    -- extra FLOAT,\n    -- mta_tax FLOAT,\n     tip_amount FLOAT,\n    -- tolls_amount FLOAT,\n    -- ehail_fee INT,\n    -- improvement_surcharge FLOAT,\n    -- total_amount FLOAT,\n    -- payment_type INT,\n    trip_type INT\n    -- congestion_surcharge FLOAT\n    ) AS [result];\n\n\n----------------- Reading Parquet Data from Folders & Subfolders ---------------\n\nSELECT\n    result.filepath() as file_path,\n    --result.filename() as file_name,\n    count(*) as total_count\nFROM\n    OPENROWSET(\n        BULK 'raw/trip_data_green_parquet/year=*/month=*/*.parquet',\n        DATA_SOURCE = 'nyc_taxi_data',\n        FORMAT = 'PARQUET'\n    ) AS [result]\ngroup by result.filepath()\nORDER BY result.filepath();\n\nSELECT\n    result.filepath(1) as year,\n    result.filepath(2) as month,\n    --result.filename() as file_name,\n    count(*) as total_count\nFROM\n    OPENROWSET(\n        BULK 'raw/trip_data_green_parquet/year=*/month=*/*.parquet',\n        DATA_SOURCE = 'nyc_taxi_data',\n        FORMAT = 'PARQUET'\n    ) AS [result]\ngroup by result.filepath(1),result.filepath(2)\nORDER BY result.filepath(1),result.filepath(2);\n\nSELECT\n    result.filepath(1) as year,\n    result.filepath(2) as month,\n    --result.filename() as file_name,\n    count(*) as total_count\nFROM\n    OPENROWSET(\n        BULK 'raw/trip_data_green_parquet/year=*/month=*/*.parquet',\n        DATA_SOURCE = 'nyc_taxi_data',\n        FORMAT = 'PARQUET'\n    ) AS [result]\nwhere result.filepath(1) = 2020\ngroup by result.filepath(1),result.filepath(2)\nORDER BY result.filepath(1),result.filepath(2);\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "nyc_taxi_discovery",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
 		}
 	]
 }
